@@ -30,7 +30,11 @@ To save videos: Triple tap on them and select "Save Video"
 
 ## History
 
-TODO: Write history
+#### 1.0.1
+* Fix ability to save Poll images  
+
+#### 1.0.0
+* Initial Release  
 
 ## Credits
 
