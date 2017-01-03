@@ -5,14 +5,19 @@ Enhance your Bkstg experience
 ## Installation
 
 Clone repo and compile with theos
+
 OR
+
 Download Deb and install with Filza
 
 ## Usage
 
 NOTE: You MUST enable photo access to be able to save media
 
+
+
 To save images: Long press on the image and select "Save Image"
+
 To save videos: Triple tap on them and select "Save Video"
 
 ## Contributing
@@ -30,6 +35,7 @@ TODO: Write history
 ## Credits
 
 Made by Gh0stByte
+
 Suggestion by /u/marcelre
 
 ## License
