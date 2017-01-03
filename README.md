@@ -30,6 +30,9 @@ To save videos: Triple tap on them and select "Save Video"
 
 ## History
 
+#### 1.0.2
+* Fix ability to save Profile Pictures
+
 #### 1.0.1
 * Fix ability to save Poll images  
 
@@ -38,7 +41,7 @@ To save videos: Triple tap on them and select "Save Video"
 
 ## Credits
 
-Made by Gh0stByte
+Made by [Gh0stByte](http://twitter.com/Gh0stByte)
 
 Suggestion by /u/marcelre
 

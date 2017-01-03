@@ -35,6 +35,10 @@
 @property (assign, nonatomic) FLImageView *photoView;
 @end
 
+@interface FLFullScreenPhotoViewController : UIViewController
+@property (assign, nonatomic) UIImageView *imageView;
+@end
+
 %hook FLHubPhotoViewController
 
 -(void)viewDidLoad
@@ -235,6 +239,62 @@
 	[actionSheet addAction:[UIAlertAction actionWithTitle:@"Save Image" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
 
 		UIImage *snapshot = self.photoView.originalImage;
+
+		[[PHPhotoLibrary sharedPhotoLibrary] performChanges:^
+		{
+			PHAssetChangeRequest *changeRequest = [PHAssetChangeRequest creationRequestForAssetFromImage:snapshot];
+			changeRequest.creationDate          = [NSDate date];
+		} 
+		completionHandler:^(BOOL success, NSError *error) 
+		{
+			if (success) 
+			{
+				NSLog(@"successfully saved");
+			}
+			else 
+			{
+				NSLog(@"error saving to photos: %@", error);
+			}
+		}];
+
+		[self  dismissViewControllerAnimated:YES completion:^{
+		}];
+	}]];
+
+    // Present action sheet.
+	[self  presentViewController:actionSheet animated:YES completion:nil];
+}
+
+%end
+
+
+%hook FLFullScreenPhotoViewController
+
+-(void)viewDidLoad
+{
+	UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc]
+		initWithTarget:self 
+		action:@selector(handleLongPress:)];
+	longPress.minimumPressDuration = 1.5;
+	[self.view addGestureRecognizer:longPress];
+	%orig;
+}
+
+%new
+-(void)handleLongPress:(UILongPressGestureRecognizer *)sender
+{
+	UIAlertController *actionSheet = [UIAlertController alertControllerWithTitle:nil message:nil preferredStyle:UIAlertControllerStyleActionSheet];
+
+	[actionSheet addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction *action) {
+
+        // Cancel button tappped.
+		[self  dismissViewControllerAnimated:YES completion:^{
+		}];
+	}]];
+
+	[actionSheet addAction:[UIAlertAction actionWithTitle:@"Save Image" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+
+		UIImage *snapshot = self.imageView.image;
 
 		[[PHPhotoLibrary sharedPhotoLibrary] performChanges:^
 		{

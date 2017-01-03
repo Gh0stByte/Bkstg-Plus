@@ -1,7 +1,7 @@
 Package: gg.gh0stbyte.bkstg
 Name: Bkstg Plus
 Depends: mobilesubstrate
-Version: 1.0.0
+Version: 1.0.2
 Architecture: iphoneos-arm
 Description: Save Media from Bkstg
   Download photos & videos using this tweak. This tweak was suggested by /u/marcelre. 
