@@ -1,0 +1,12 @@
+Package: gg.gh0stbyte.bkstg
+Name: Bkstg Plus
+Depends: mobilesubstrate
+Version: 1.0.0
+Architecture: iphoneos-arm
+Description: Save Media from Bkstg
+  Download photos & videos using this tweak. This tweak was suggested by /u/marcelre. 
+  Long-press photos to save
+  Triple-tap videos to save
+Maintainer: Gh0stByte <gh0stbyte01@gmail.com>
+Author: Gh0stByte <gh0stbyte01@gmail.com>
+Section: TweakBounty
