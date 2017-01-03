@@ -39,296 +39,130 @@
 @property (assign, nonatomic) UIImageView *imageView;
 @end
 
-%hook FLHubPhotoViewController
-
--(void)viewDidLoad
-{
-	UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc]
-		initWithTarget:self 
-		action:@selector(handleLongPress:)];
-	longPress.minimumPressDuration = 1.5;
-	[self.view addGestureRecognizer:longPress];
-	%orig;
-}
-
-%new
--(void)handleLongPress:(UILongPressGestureRecognizer *)sender
-{
-	UIAlertController *actionSheet = [UIAlertController alertControllerWithTitle:nil message:nil preferredStyle:UIAlertControllerStyleActionSheet];
-
-	[actionSheet addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction *action) {
-
-        // Cancel button tappped.
-		[self dismissViewControllerAnimated:YES completion:^{
-		}];
-	}]];
-
-	[actionSheet addAction:[UIAlertAction actionWithTitle:@"Save Image" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
-
-		UIImage *snapshot = self.imageView.originalImage;
-
-		[[PHPhotoLibrary sharedPhotoLibrary] performChanges:^
-		{
-			PHAssetChangeRequest *changeRequest = [PHAssetChangeRequest creationRequestForAssetFromImage:snapshot];
-			changeRequest.creationDate          = [NSDate date];
-		} 
-		completionHandler:^(BOOL success, NSError *error) 
-		{
-			if (success) 
-			{
-				NSLog(@"successfully saved");
-			}
-			else 
-			{
-				NSLog(@"error saving to photos: %@", error);
-			}
-		}];
-
-		[self dismissViewControllerAnimated:YES completion:^{
-		}];
-	}]];
-
-    // Present action sheet.
-	[self presentViewController:actionSheet animated:YES completion:nil];
-}
-
-%end
-
-
 @interface FLPhotoDetailViewController : UIViewController
 @property (assign, nonatomic) FLImageView *photoView;
 @end
 
+
+// Save Image with UIImage and the Controller
+inline void requestSaveImage(UIImage *snapshot, UIViewController *sender) {
+
+	UIAlertController *actionSheet = [UIAlertController alertControllerWithTitle:nil message:nil preferredStyle:UIAlertControllerStyleActionSheet];
+
+	[actionSheet addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction *action) {
+		[sender dismissViewControllerAnimated:YES completion:^{		}];	}]];
+
+	[actionSheet addAction:[UIAlertAction actionWithTitle:@"Save Image" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+		[[PHPhotoLibrary sharedPhotoLibrary] performChanges:^
+		{
+			PHAssetChangeRequest *changeRequest = [PHAssetChangeRequest creationRequestForAssetFromImage:snapshot];
+			changeRequest.creationDate          = [NSDate date];
+		} 
+		completionHandler:^(BOOL success, NSError *error) 
+		{
+			if (success) 
+			{
+				NSLog(@"successfully saved");
+			}
+			else 
+			{
+				NSLog(@"error saving to photos: %@", error);
+			}
+		}];
+
+		[sender dismissViewControllerAnimated:YES completion:^{
+		}];
+	}]];
+	[sender presentViewController:actionSheet animated:YES completion:nil];
+}
+
+#define SETUP_LONGPRESS_ONCONTROLLER UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleLongPress:)]; longPress.minimumPressDuration = 1.5; [self.view addGestureRecognizer:longPress];
+
+// Media tab images
+%hook FLHubPhotoViewController
+
+-(void)viewDidLoad
+{
+	SETUP_LONGPRESS_ONCONTROLLER
+	%orig;
+}
+%new
+-(void)handleLongPress:(UILongPressGestureRecognizer *)sender
+{
+	requestSaveImage(self.imageView.originalImage, self);
+}
+
+%end
+
+//Normal Timeline Photos
 %hook FLPhotoDetailViewController
 
 -(void)viewDidLoad
 {
-	UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc]
-		initWithTarget:self 
-		action:@selector(handleLongPress:)];
-	longPress.minimumPressDuration = 1.5;
-	[self.view addGestureRecognizer:longPress];
+	SETUP_LONGPRESS_ONCONTROLLER
 	%orig;
 }
-
-
 
 %new
 -(void)handleLongPress:(UILongPressGestureRecognizer *)sender
 {
-	UIAlertController *actionSheet = [UIAlertController alertControllerWithTitle:nil message:nil preferredStyle:UIAlertControllerStyleActionSheet];
-
-	[actionSheet addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction *action) {
-
-        // Cancel button tappped.
-		[self dismissViewControllerAnimated:YES completion:^{
-		}];
-	}]];
-
-	[actionSheet addAction:[UIAlertAction actionWithTitle:@"Save Image" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
-
-		UIImage *snapshot = [self.photoView image];
-
-		[[PHPhotoLibrary sharedPhotoLibrary] performChanges:^
-		{
-			PHAssetChangeRequest *changeRequest = [PHAssetChangeRequest creationRequestForAssetFromImage:snapshot];
-			changeRequest.creationDate          = [NSDate date];
-		} 
-		completionHandler:^(BOOL success, NSError *error) 
-		{
-			if (success) 
-			{
-				NSLog(@"successfully saved");
-			}
-			else 
-			{
-				NSLog(@"error saving to photos: %@", error);
-			}
-		}];
-
-		[self dismissViewControllerAnimated:YES completion:^{
-		}];
-	}]];
-
-    // Present action sheet.
-	[self presentViewController:actionSheet animated:YES completion:nil];
+	requestSaveImage([self.photoView image], self);
 }
 
 %end
 
+//Collage Photos
 %hook FLCollageSinglePhotoViewController
 
 -(void)viewDidLoad
 {
-	UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc]
-		initWithTarget:self 
-		action:@selector(handleLongPress:)];
-	longPress.minimumPressDuration = 1.5;
-	[self.view addGestureRecognizer:longPress];
+	SETUP_LONGPRESS_ONCONTROLLER
 	%orig;
 }
 
 %new
 -(void)handleLongPress:(UILongPressGestureRecognizer *)sender
 {
-	UIAlertController *actionSheet = [UIAlertController alertControllerWithTitle:nil message:nil preferredStyle:UIAlertControllerStyleActionSheet];
-
-	[actionSheet addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction *action) {
-
-        // Cancel button tappped.
-		[self  dismissViewControllerAnimated:YES completion:^{
-		}];
-	}]];
-
-	[actionSheet addAction:[UIAlertAction actionWithTitle:@"Save Image" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
-
-		UIImage *snapshot = self.photoView.photoView.originalImage;
-
-		[[PHPhotoLibrary sharedPhotoLibrary] performChanges:^
-		{
-			PHAssetChangeRequest *changeRequest = [PHAssetChangeRequest creationRequestForAssetFromImage:snapshot];
-			changeRequest.creationDate          = [NSDate date];
-		} 
-		completionHandler:^(BOOL success, NSError *error) 
-		{
-			if (success) 
-			{
-				NSLog(@"successfully saved");
-			}
-			else 
-			{
-				NSLog(@"error saving to photos: %@", error);
-			}
-		}];
-
-		[self  dismissViewControllerAnimated:YES completion:^{
-		}];
-	}]];
-
-    // Present action sheet.
-	[self  presentViewController:actionSheet animated:YES completion:nil];
+	requestSaveImage(self.photoView.photoView.originalImage, self);
 }
 
 %end
 
-
+//Poll Images
 %hook FLPollSinglePhotoViewController
 
 -(void)viewDidLoad
 {
-	UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc]
-		initWithTarget:self 
-		action:@selector(handleLongPress:)];
-	longPress.minimumPressDuration = 1.5;
-	[self.view addGestureRecognizer:longPress];
+	SETUP_LONGPRESS_ONCONTROLLER
 	%orig;
 }
 
 %new
 -(void)handleLongPress:(UILongPressGestureRecognizer *)sender
 {
-	UIAlertController *actionSheet = [UIAlertController alertControllerWithTitle:nil message:nil preferredStyle:UIAlertControllerStyleActionSheet];
-
-	[actionSheet addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction *action) {
-
-        // Cancel button tappped.
-		[self  dismissViewControllerAnimated:YES completion:^{
-		}];
-	}]];
-
-	[actionSheet addAction:[UIAlertAction actionWithTitle:@"Save Image" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
-
-		UIImage *snapshot = self.photoView.originalImage;
-
-		[[PHPhotoLibrary sharedPhotoLibrary] performChanges:^
-		{
-			PHAssetChangeRequest *changeRequest = [PHAssetChangeRequest creationRequestForAssetFromImage:snapshot];
-			changeRequest.creationDate          = [NSDate date];
-		} 
-		completionHandler:^(BOOL success, NSError *error) 
-		{
-			if (success) 
-			{
-				NSLog(@"successfully saved");
-			}
-			else 
-			{
-				NSLog(@"error saving to photos: %@", error);
-			}
-		}];
-
-		[self  dismissViewControllerAnimated:YES completion:^{
-		}];
-	}]];
-
-    // Present action sheet.
-	[self  presentViewController:actionSheet animated:YES completion:nil];
+	requestSaveImage(self.photoView.originalImage, self);
 }
 
 %end
 
-
+//Profile Pictures
 %hook FLFullScreenPhotoViewController
 
 -(void)viewDidLoad
 {
-	UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc]
-		initWithTarget:self 
-		action:@selector(handleLongPress:)];
-	longPress.minimumPressDuration = 1.5;
-	[self.view addGestureRecognizer:longPress];
+	SETUP_LONGPRESS_ONCONTROLLER
 	%orig;
 }
 
 %new
 -(void)handleLongPress:(UILongPressGestureRecognizer *)sender
 {
-	UIAlertController *actionSheet = [UIAlertController alertControllerWithTitle:nil message:nil preferredStyle:UIAlertControllerStyleActionSheet];
-
-	[actionSheet addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction *action) {
-
-        // Cancel button tappped.
-		[self  dismissViewControllerAnimated:YES completion:^{
-		}];
-	}]];
-
-	[actionSheet addAction:[UIAlertAction actionWithTitle:@"Save Image" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
-
-		UIImage *snapshot = self.imageView.image;
-
-		[[PHPhotoLibrary sharedPhotoLibrary] performChanges:^
-		{
-			PHAssetChangeRequest *changeRequest = [PHAssetChangeRequest creationRequestForAssetFromImage:snapshot];
-			changeRequest.creationDate          = [NSDate date];
-		} 
-		completionHandler:^(BOOL success, NSError *error) 
-		{
-			if (success) 
-			{
-				NSLog(@"successfully saved");
-			}
-			else 
-			{
-				NSLog(@"error saving to photos: %@", error);
-			}
-		}];
-
-		[self  dismissViewControllerAnimated:YES completion:^{
-		}];
-	}]];
-
-    // Present action sheet.
-	[self  presentViewController:actionSheet animated:YES completion:nil];
+	requestSaveImage(self.imageView.image, self);
 }
 
 %end
 
-// IGNORE ABOVE. SAVES IMAGES 
-//FLAVPlayerLayerView
-//FLHubVideoCollection
-//FLVideoContentHolderVIew
-
-
+//Saves Videos
 %hook FLPostCollectionViewCell
 
 -(void)setPostView:(FLBaseContentHolderView *)holderView
